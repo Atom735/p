@@ -1,0 +1,75 @@
+key: vniineft
+name: АО «ВНИИнефть»
+url: https://www.vniineft.ru/purchase/open/
+items_max: 1000
+items_per_page: 20
+url_scheme:
+  url: https://www.vniineft.ru/purchase/open/
+  query:
+    PAGEN_1: ${page}
+=pages:
+  block: .competitions
+  selector: .text a
+  item:
+    attr: href
+    regexp: '\?PAGEN_1=(\d+)'
+    value: ${1}
+=tenders:
+  block: .competitions
+  selector: .item
+  item:
+    $date: .date # 30 Августа 2021
+    =name: .name
+    $desc: .desc
+    =link:
+      selector: .name a # /purchase/open/2021/11898/
+      attr: href
+    =number:
+      text: ${=link} # /purchase/open/2021/11898/
+      regexp: '\/(\d+)\/$'
+      value: ${1}
+    =key:
+      value: ${=number}
+    =price:
+      text: ${desc}
+      regexp: 'Начальная\s*цена:\s*(\d+)(?:\s+(\d+)(?:\s+(\d+))?(?:\s+(\d+))?(?:\s+(\d+))?)?,(\d+)'
+      value: ${1}${2}${3}${4}${5}
+    =start:
+      text: ${date} # 30 Августа 2021
+      regexp: '(\d+)\s*(\w+)\s*(\d+)'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T08:00:00
+    =end:
+      text: ${desc}
+      regexp: 'до\s*(\d+)\s*(\S+)\s*(\d+)'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T20:00:00
+    =type:
+      text: Запрос предложений
+    =organizer:
+      text: Акционерное общество "Всероссийский нефтегазовый научно-исследовательский институт имени академика А.П. Крылова"
+
+# =pages:
+#   block:
+#   item:
+#     selector: .text a
+#     attr: href
+#     regexp: '\?PAGEN_1=(\d+)'
+#     value: ${1}
+
+# =tenders:
+#   block: .competitions
+#   item:
+#     selector: .item
+#     =link:
+#       selector: .name
+#       attr: href
+#     =price:
+#       selector: ${desc}
+#       regexp: 'Начальная цена:  (\d+)(?:\s+(\d+)(?:\s+(\d+))?(?:\s+(\d+))?(?:\s+(\d+))?)?,(\d+) руб.'
+#       value: ${1}${2}${3}${4}${5}
+#     $date: .date
+#     $name: .name
+#     $desc: .desc
+#     $date_end:
+#       selector: ${desc}
+#       regexp: 'Прием документов: до (\d+) (\w+) (\d+)'
+#       value: ${3}-${2:month}-${1}

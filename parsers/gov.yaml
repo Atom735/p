@@ -1,0 +1,72 @@
+key: gov
+name: Официальный сайт Единой информационной системы в сфере закупок
+url: https://zakupki.gov.ru/epz/order/extendedsearch/results.html
+items_max: 35000000
+items_per_page: 500
+pages_max_unvalible: true
+url_scheme:
+  url: https://zakupki.gov.ru/epz/order/extendedsearch/results.html
+  query:
+    pageNumber: ${page}
+    recordsPerPage: _500
+    morphology: on
+    search-filter: Дате+размещения
+    sortDirection: false
+    showLotsInfoHidden: false
+    sortBy: UPDATE_DATE
+    fz44: on
+    fz223: on
+    ppRf615: on
+    fz94: on
+    af: on
+    ca: on
+    pc: on
+    pa: on
+    currencyIdGeneral: -1
+
+=pages:
+  block: .paginator-block .paginator .pages
+  selector: .page__link .link-text
+=tenders:
+  block: .search-registry-entrys-block
+  selector: .search-registry-entry-block .registry-entry__form
+  item:
+    =type: .registry-entry__header-top__title
+    =number:
+      selector: .registry-entry__header-mid__number
+      regexp: '^№\s+(\d+)$'
+      value: ${1}
+    =key:
+      text: ${=number}
+    =status: .registry-entry__header-mid__title
+    =link:
+      selector: .registry-entry__header-mid__number a
+      attr: href
+    =name: .registry-entry__body-title[text="Объект закупки"] + *
+    =organizer: .registry-entry__body-title[text="Заказчик"] + *, .registry-entry__body-title[text="Организация, осуществляющая размещение"] + *
+
+    =price: # Цена
+      item: .price-block
+      regexp: '(\d+)(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?,\d\d\s₽'
+      #"3 356 000,00 ₽"
+      value: ${1}${2}${3}${4}${5}
+      opt: true
+
+    =start:
+      selector: '.data-block__title[text="Размещено"] + .data-block__value'
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d)$'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T08:00:00
+
+    # =updated:
+    #   selector: '.data-block__title[text="Обновлено"] + .data-block__value'
+    #   regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d)$'
+    #   # yyyy-MM-ddTHH:mm:ss.mmmuuu
+    #   value: ${3:YYYY}-${2:MM}-${1:DD}T08:00:00
+
+    =end:
+      selector: '.data-block__title[text="Окончание подачи заявок"] + .data-block__value'
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d)$'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T20:00:00
+      opt: true

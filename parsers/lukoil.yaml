@@ -1,0 +1,30 @@
+key: lukoil
+name: Тендеры, проводимые ПАО «ЛУКОЙЛ»
+url: https://lukoil.ru/Company/Tendersandauctions/Tenders/TendersofLukoilgroup
+method: POST
+body: '{"Take": 1000, "Tab": 1, "Skip": ${items}}'
+type: json
+items_max: 5000
+items_per_page: 1000
+url_scheme: https://lukoil.ru/api/tenders/GetTenders
+
+$count: Count
+$count2:
+  text: '${count : add(999)}'
+=pages:
+  block: Count
+  item:
+    text: '${count2: div(1000)}'
+=tenders:
+  block: Items
+  item:
+    =key: TenderId
+    =link:
+      text: https://lukoil.ru/Company/Tendersandauctions/Tenders
+    =orginizer: OrganizerName
+    =name: Topic
+    =number: Number
+    =end: DateFinish
+    =start: PublishingDate
+    =type:
+      text: Тендер

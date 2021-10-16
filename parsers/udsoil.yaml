@@ -1,0 +1,51 @@
+key: udsoil
+name: «UDS OIL» Удмуртия
+url: https://udsoil.ru/tenders/
+pages_max: 1
+url_scheme: https://udsoil.ru/tenders/
+=pages:
+  block: header.header
+  selector: div.container
+  item:
+    text: '1'
+=tenders:
+  block: .table
+  selector: .table-row__close
+  item:
+    block:
+    selector: .table-cell
+    item:
+      $link:
+        selector: a
+        attr: href
+        opt: true
+    $id:
+      attr: id # id="bx_3218110189_8302"
+    =link:
+      text: '#${id}'
+    =number:  # № тендера
+      text: ${.0}
+    =name: # Наименование тендера
+      text: ${.1}
+    $location: # Наименование объекта
+      text: ${.2}
+    =end: # Дата окончания подачи заявок
+      text: ${.3} # 10.09.2021
+      regexp: '^(\d+)\.(\d+)\.(\d+)$'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T20:00:00
+    $end: # Ориентировочная дата проведения тендера
+      text: ${.4}
+      regexp: '^(\d+)\.(\d+)\.(\d+)$'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T20:00:00
+    $files:
+      text: ${.5.link}
+    $edited:
+      text: ${.6}
+    =key:
+      text: ${id}
+      regexp: '_(\d+)$'
+      value: ${1}
+    =type:
+      text: Тендер
+    =organizer:
+      text: Тендерная комиссия «УДС-Групп»

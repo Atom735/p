@@ -1,0 +1,79 @@
+key: etpgpb
+name: Электронная торговая площадка Группы Газпромбанка
+url: https://etpgpb.ru/procedures/
+items_max: 550000
+items_per_page: 200
+pages_max_unvalible: true
+url_scheme:
+  url: https://etpgpb.ru/procedures/page/${page}/
+  query:
+    per: 200
+    procedure[category]: all
+    procedure[prms][all]: true
+    procedure[prms][with_eds]: true
+    procedure[prms][with_guarantee_application]: true
+    procedure[prms][without_eds]: true
+    procedure[prms][without_guarantee_application]: true
+    procedure[section][0]: common
+    procedure[section][1]: gazprom
+    procedure[section][2]: nelikvid
+    procedure[section][3]: pao_gazpromneft
+    procedure[section][4]: all
+    procedure[section][5]: airports_russia
+    procedure[section][6]: fz44
+    procedure[section][7]: nonresident
+    procedure[section][8]: geh_group
+    procedure[section][9]: inter_rao
+    procedure[type_procedure][0]: Конкурс
+    procedure[type_procedure][1]: Запрос+котировок
+    procedure[type_procedure][2]: Аукцион+на+повышение
+    procedure[type_procedure][3]: Аукцион+на+понижение
+    procedure[type_procedure][4]: Попозиционные+торги
+    procedure[type_procedure][5]: Все
+    procedure[type_procedure][6]: Ценовой+запрос
+    procedure[type_procedure][7]: Аукцион
+    procedure[type_procedure][8]: Торговый+портал
+=pages:
+  block: .pagination nav
+  selector: .pagination__item, .pagination__item--currently
+=tenders:
+  block: .proceduresList
+  selector: .procedure
+  item:
+    =number:
+      selector: .procedure__infoTitle
+      regexp: '№\s+(\S+)$'
+      value: ${1}
+    =link:
+      selector: a.procedure__link
+      attr: href
+    =key:
+      text: ${=number}
+    =name: .procedure__infoDescriptionFull
+    =type:
+      selector: .procedure__infoTitle
+      regexp: '^(.*?)\s*№\s+\S+$'
+      value: ${1}
+    =organizer: .procedure__companyName
+
+    =start:
+      selector: .procedure__detailsUnitTitle[text="Начало приема заявок:"] + .procedure__detailsUnitValue
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d) (?:г\., )?(\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+      opt: true
+    =end:
+      selector: '
+      .procedure__detailsUnitTitle[text="Прием заявок:"] + .procedure__detailsUnitValue,
+      .procedure__detailsUnitTitle[text="Прием заявок до:"] + .procedure__detailsUnitValue,
+      .procedure__detailsUnitTitle[text="Дата аукциона:"] + .procedure__detailsUnitValue'
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d) (?:г\., )?(\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+      opt: true
+    =price:
+      selector: .procedure__detailsSum
+      regexp: '(\d+)(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?'
+      #"3 356 000,00 ₽"
+      value: ${1}${2}${3}${4}${5}
+      opt: true

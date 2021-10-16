@@ -1,0 +1,169 @@
+---
+parser_uid: example
+parser_name: Имя
+base_url: https://example.com/
+query_url:
+  url: https://example.com/page/${page}/
+  query:
+    per: ${tender_items_per_page}
+tender_items_max: 1000
+tender_items_per_page: 200
+pages_only_next: true
+
+---
+parser_uid: example
+base_url: https://example.com/
+query_method: METHOD
+query_body: Some Body ${like} this
+fetched_file_type: type of file
+pages_max: 10
+pages_max_unvalible: true
+---
+key: etpgpb
+name: Электронная торговая площадка Группы Газпромбанка
+url: https://etpgpb.ru/procedures/
+items_max: 550000
+items_per_page: 200
+pages_max_unvalible: true
+url_scheme:
+  url: https://etpgpb.ru/procedures/page/${page}/
+  query:
+    per: ${items_per_page}
+
+remove:
+  head > *,
+  svg, img,
+  body > * > *,
+  aside.sidebar_procedure > *,
+  section.section__content > *,
+  div.proceduresList > *
+
+remove_not:
+  body > * > div.section__content_wrapper,
+  aside.sidebar_procedure > div.sidebarInfo,
+  section.section__content > div.hiddenPagination,
+  section.section__content > div.proceduresList,
+  div.proceduresList > div.procedure
+
+
+=items_count:
+  selector: span.sidebarInfo__number
+  attr: text
+  clear: ''
+
+=pages:
+  block: div.pagination nav
+  selector: a
+  attr: href
+  regexp: '\/page\/(\d+)\/'
+  value: ${$1}
+  clear: div.hiddenPagination
+
+=tenders:
+  block: div.proceduresList
+  selector: div.procedure__data
+  =link:
+    selector: a.procedure__link
+    attr: href
+
+  =company: div.procedure__companyName
+
+  $infoTitle: a.procedure__infoTitle
+
+  =number:
+    text: ${infoTitle}
+    regexp: '№\s+(\S+)$'
+    value: ${$1}
+
+  =key:
+    value: etpgbp.${=number}
+
+  =name: div.procedure__infoDescriptionFull
+
+  # Тип торгов
+  =type:
+    text: ${infoTitle}
+    regexp: '^(.*?)\s*№\s+\S+$'
+    value: ${$1}
+
+  =start:
+    selector: div.procedure__detailsUnitTitle[text="Начало приема заявок:"] + .procedure__detailsUnitValue
+    attr: text
+    regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d) (?:г\., )?(\d\d):(\d\d)'
+    # yyyy-MM-ddTHH:mm:ss
+    value: ${$3:YYYY}-${$2:MM}-${$1:DD}T${$4:hh}:${$5:mm}:00
+    opt: true
+
+  =end:
+    selector:
+      div.procedure__detailsUnitTitle[text="Прием заявок:"] + div.procedure__detailsUnitValue,
+      div.procedure__detailsUnitTitle[text="Прием заявок до:"] + div.procedure__detailsUnitValue,
+      div.procedure__detailsUnitTitle[text="Дата аукциона:"] + div.procedure__detailsUnitValue
+    attr: text
+    regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d) (?:г\., )?(\d\d):(\d\d)'
+    # yyyy-MM-ddTHH:mm:ss.mmmuuu
+    value: ${$3:YYYY}-${$2:MM}-${$1:DD}T${$4:hh}:${$5:mm}:00
+    opt: true
+
+  =price:
+    selector: .procedure__detailsSum
+    attr: text
+    regexp: '(\d+)(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?(?:\s(\d+))?'
+    #"3 356 000,00 ₽"
+    value: ${$1}${$2}${$3}${$4}${$5}
+    opt: true
+
+---
+key: gazprom-neft
+name: Информация о текущих закупках «Газпром нефти»
+url: https://zakupki.gazprom-neft.ru/tenderix/
+items_max: 30000
+items_per_page: 100
+url_scheme:
+  url: https://zakupki.gazprom-neft.ru/tenderix/index.php
+  raw: true
+  query:
+    PAGE: ${page}
+    LIMIT: 100
+    FILTER[STATE]: ALL
+    FILTER[SORT]: DATE_START_DESC
+
+=pages:
+  block: .tender-desktop .purchases-pagination
+  selector: a.page-link
+  item:
+    attrt: href
+    regexp: '[\?\&]PAGE=(\d+)'
+    value: ${1}
+    opt: true
+
+
+=tenders:
+  block: .tender-desktop .purchases-list
+  selector: .purchase
+  item:
+    =number:
+      selector: .purchase-number
+      regexp: '^№\s+(.+)$'
+      value: ${1}
+    =link:
+      selector: .purchase-number a
+      attr: href
+    =key:
+      text: ${=link}
+      regexp: '[\?\&]ID=(\d+)'
+      value: ${1}
+    =status: .purchase-status
+    =name: .purchase-desc
+    =start:
+      selector: .purchase-start .date-value
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d), (\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =end:
+      selector: .purchase-end .date-value
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d), (\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =organizer: .date-title[text="Заказчик:"] + .date-value
+    =type: .date-title[text="Вид процедуры:"] + .date-value

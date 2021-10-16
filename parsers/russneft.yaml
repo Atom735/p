@@ -1,0 +1,62 @@
+key: russneft
+name: Тендеры ПАО НК "РуссНефть"
+url: https://russneft.ru/tenders/russneft/
+pages_max: 6
+url_scheme:
+  - https://russneft.ru/tenders/russneft/
+  - https://russneft.ru/tenders/all/zapsibgroop/
+  - https://russneft.ru/tenders/all/centrsibgroop/
+  - https://russneft.ru/tenders/all/volgagroop/
+  - https://russneft.ru/tenders/all/belarus/
+  - https://russneft.ru/tenders/all/overseas/
+
+$org:
+  - ''
+  - 'ПАО НК "РуссНефть"'
+  - 'ПАО НК "РуссНефть" Западно-Сибирская группа'
+  - 'ПАО НК "РуссНефть" Центрально-Сибирская группа'
+  - 'ПАО НК "РуссНефть" Поволжская группа'
+  - 'ПАО НК "РуссНефть" Республика Беларусь'
+  - 'ПАО НК "РуссНефть" Зарубежные проекты'
+=tenders:
+  block: table.tender-table
+  selector: tr:not(:nth-child(1))
+  allow_empty: true
+  item:
+    $cell:
+      block:
+      selector: td
+    $f1:
+      selector: td:nth-child(5) a
+      attr: href
+      opt: true
+      regexp: '\/file_path_(\d+)'
+      value: ${1}
+    $f2:
+      selector: td:nth-child(6) a
+      attr: href
+      opt: true
+      regexp: '\/file_path_(\d+)'
+      value: ${1}
+    =key:
+      text: ${f1} A${f2}
+      regexp: '\w+'
+      value: ${0}
+    =link:
+      text: ${*url}
+    =number:
+      text: ${cell.0}
+    =start:
+      text: ${cell.1}
+      regexp: '(\d+)\.(\d+)\.(\d+)'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T08:00:00
+    =end:
+      text: ${cell.3} ${cell.2}
+      regexp: '(\d+)\.(\d+)\.(\d+)'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T20:00:00
+    =name:
+      text: ${cell.4}
+    =organizer:
+      text: ${org.${*page}}
+    =type:
+      text: Тендер

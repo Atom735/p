@@ -1,0 +1,96 @@
+key: tektorg
+name: АО «ТЭК-Торг» – федеральная электронная торговая площадка
+url: https://www.tektorg.ru/procedures
+items_max: 1000000
+items_per_page: 25
+url_scheme:
+  url: https://www.tektorg.ru/procedures
+  query:
+    page: ${page}
+    sort: relevance
+    limit: 500
+=pages:
+  block: .general .pagination
+  selector: li a
+  item:
+    attr: href
+    regexp: '[\?\&]page=(\d+)'
+    value: ${1}
+    opt: true
+=tenders:
+  block: .general
+  selector: .section-procurement__item
+  item:
+    =number:
+      selector: .section-procurement__item-numbers
+      regexp: '(?:Номер закупки на сайте ЭТП|Внутренний номер):\s*(.*?)\s*$'
+      value: ${1}
+    =key:
+      text: ${=number}
+    =name: .section-procurement__item-information a
+    =link:
+      selector: .section-procurement__item-information a
+      attr: href
+    =msp:
+      selector: .section-procurement__item-msp
+      opt: true
+      type: bool
+    $descriptions:
+      block:
+      selector: .section-procurement__item-description
+      item:
+        $title: span
+        $values:
+          block:
+          selector: a
+    $dates:
+      block: .section-procurement__item-date
+      selector: .section-procurement__item-dateTo
+    =price:
+      selector: .section-procurement__item-totalPrice
+      opt: true
+      regexp: '(\d+)(?:\s+(\d+)(?:\s+(\d+))?(?:\s+(\d+))?(?:\s+(\d+))?)?,(\d+)'
+      value: ${1}${2}${3}${4}${5}
+    =start:
+      text:
+        ${dates:where(/Дата и время начала подачи заявок/)}
+        ${dates:where(/Дата начала подачи заявок/)}
+        ${dates:where(/Начало приема заявок/)}
+        ${dates:where(/Дата подачи окончательных предложений/)}
+        ${dates:where(/Дата публикации процедуры/)}
+      regexp: '(\d+)\.(\d+)\.(\d+)(?: (\d+):(\d+))?'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =end:
+      text:
+        ${dates:where(/Дата и время окончания подачи заявок/)}
+        ${dates:where(/Дата окончания приема заявок/)}
+        ${dates:where(/Окончание приема заявок/)}
+        ${dates:where(/Дата окончания срока подачи технико-коммерческих частей/)}
+        ${dates:where(/Подведение итогов/)}
+        ${dates:where(/Проведение торгов/)}
+        ${dates:where(/Подведение итогов не позднее/)}
+        ${dates:where(/Дата проведения аукциона в электронной форме/)}
+        ${dates:where(/Дата рассмотрения и оценки заявок/)}
+      regexp: '(\d+)\.(\d+)\.(\d+)(?: (\d+):(\d+))?'
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =status:
+      text: ${dates:where(/Статус:/)}
+      regexp: 'Статус:\s*(.*?)\s*$'
+      value: ${1}
+      opt: true
+    =type: .section-procurement__item-request-price
+    =organizer:
+      text: ${descriptions:where(/Организатор:/)}
+      regexp: 'Организатор:\s*(.*?)\s*$'
+      value: ${1}
+      opt: true
+    # =OKDP:
+    #   text: ${descriptions:where(/ОКДП/ОКПД2:/)}
+    #   regexp: 'ОКДП/ОКПД2:\s*(.*?)\s*$'
+    #   value: ${1}
+    #   opt: true
+    # =OKVED:
+    #   text: ${descriptions:where(/ОКВЭД/ОКВЭД2:/)}
+    #   regexp: 'ОКВЭД/ОКВЭД2:\s*(.*?)\s*$'
+    #   value: ${1}
+    #   opt: true

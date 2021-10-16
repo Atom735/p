@@ -1,0 +1,50 @@
+key: gazprom-neft
+name: Информация о текущих закупках «Газпром нефти»
+url: https://zakupki.gazprom-neft.ru/tenderix/
+items_max: 30000
+items_per_page: 100
+url_scheme:
+  url: https://zakupki.gazprom-neft.ru/tenderix/index.php
+  raw: true
+  query:
+    PAGE: ${page}
+    LIMIT: 100
+    FILTER[STATE]: ALL
+    FILTER[SORT]: DATE_START_DESC
+=pages:
+  block: .tender-desktop .purchases-pagination
+  selector: a.page-link
+  item:
+    attrt: href
+    regexp: '[\?\&]PAGE=(\d+)'
+    value: ${1}
+    opt: true
+=tenders:
+  block: .tender-desktop .purchases-list
+  selector: .purchase
+  item:
+    =number:
+      selector: .purchase-number
+      regexp: '^№\s+(.+)$'
+      value: ${1}
+    =link:
+      selector: .purchase-number a
+      attr: href
+    =key:
+      text: ${=link}
+      regexp: '[\?\&]ID=(\d+)'
+      value: ${1}
+    =status: .purchase-status
+    =name: .purchase-desc
+    =start:
+      selector: .purchase-start .date-value
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d), (\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =end:
+      selector: .purchase-end .date-value
+      regexp: '^(\d\d)\.(\d\d)\.(\d\d\d\d), (\d\d):(\d\d)'
+      # yyyy-MM-ddTHH:mm:ss.mmmuuu
+      value: ${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00
+    =organizer: .date-title[text="Заказчик:"] + .date-value
+    =type: .date-title[text="Вид процедуры:"] + .date-value

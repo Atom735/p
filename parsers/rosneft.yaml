@@ -1,0 +1,41 @@
+key: rosneft
+name: Информация по закупкам товаров и услуг ПАО "НК "Роснефть" и ДО
+url: http://zakupki.rosneft.ru/ru/zakupki/all
+items_max: 700000
+items_per_page: 25
+pages_while_next: true
+url_scheme:
+  url: http://zakupki.rosneft.ru/ru/zakupki/all
+  query:
+    page: ${page}
+
+=pages:
+  block: .view-zakupki .item-list .pager
+  selector: .pager-next
+  item:
+    attr: href
+    regexp: '\?page=(\d+)'
+    value: ${1}
+    opt: true
+
+=tenders:
+  block: .view-zakupki .view-content table.views-table
+  selector: tbody > tr
+  item:
+    =key: td.views-field-nid
+    =link:
+      selector: td.views-field-field-number-zakup-value a
+      attr: href
+    =number: td.views-field-field-number-zakup-value
+    =name: td.views-field-title
+    =start:
+      selector: td.views-field-created
+      regexp: '(\d\d)\.(\d\d)\.(\d\d\d\d)(?: - (\d\d):(\d\d))?'
+      value: '${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00'
+    =end:
+      selector: td.views-field-field-zakup-end-value
+      regexp: '(\d\d)\.(\d\d)\.(\d\d\d\d)(?: - (\d\d):(\d\d))?'
+      value: '${3:YYYY}-${2:MM}-${1:DD}T${4:hh}:${5:mm}:00'
+    =type: td.views-field-field-zakup-type-value
+    =organizer: td.views-field-tid
+    # =OKDP: td.views-field-tid-1
